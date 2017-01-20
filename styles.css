@@ -1,0 +1,50 @@
+html {
+  font-size: 10px;
+  -webkit-font-smoothing: antialiased;
+}
+.s2{
+  display:flex;
+  justify-content: space-between;
+  background-color: #f35;
+}
+.s1{
+  width: calc(50%);
+  margin-left: 5em;
+  margin-right: 5em;
+  background-color: #f56;
+}
+body {
+  padding: 0;
+  margin: 0;
+  font-family: fantasy , 'Courier New', monospace;
+  font-size: 1.6rem;
+  background-image: url(images/buttons.png);
+  color: #000;
+}
+
+a {
+  color: #0f0;
+}
+header{
+  display:run-in;
+  background-color: #35f;
+}
+h1 {
+  font-size: 56px;
+  font-family: fantasy, 'Astloch', monospace;
+  text-align: center;
+}
+h2 {
+  font-size: 40px;
+  text-align: center;
+  background-color: #35f;
+}
+
+main {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+#game {
+  border: 1px solid #333;
+}
