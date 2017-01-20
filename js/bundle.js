@@ -806,6 +806,8 @@ checkColisions: function(){
         this.game.paused = true;
         this.pauseMenu();
       }
+
+     this.pauseButton.onDown.add(this.unpause, this);
       this.input.onDown.add(this.unpause, this);
     }
     else {
@@ -864,7 +866,7 @@ pauseMenu:function(){
     this.game.paused = false;}
     ,1);
   this.b_continue.font = 'Astloch';
-  this.pausetext = this.game.add.text(this.game.camera.x+400,this.game.camera.y+ 175, 'Click anywhere to continue', { font: '50px Astloch',fontVariant :'Bold', fill: '#000',boundsAlignH: "center", boundsAlignV: "middle"  });
+  this.pausetext = this.game.add.text(this.game.camera.x+400,this.game.camera.y+ 175, 'Press P or click anywhere to continue', { font: '50px Astloch',fontVariant :'Bold', fill: '#000',boundsAlignH: "center", boundsAlignV: "middle"  });
 
   this.pausetext.anchor.setTo(0.5,0.5);
     },
