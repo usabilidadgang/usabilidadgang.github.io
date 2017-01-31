@@ -5,13 +5,13 @@ html {
 .s2{
   display:flex;
   justify-content: space-between;
-  background-color: #f35;
+  background-color: #f4e842;
 }
 .s1{
   width: calc(50%);
   margin-left: 5em;
   margin-right: 5em;
-  background-color: #f56;
+  background-color: #cec92f;
 }
 body {
   padding: 0;
@@ -23,11 +23,11 @@ body {
 }
 
 a {
-  color: #0f0;
+  color: #71198e;
 }
 header{
   display:run-in;
-  background-color: #35f;
+  background-color: #f4e842;
 }
 h1 {
   font-size: 56px;
@@ -36,8 +36,9 @@ h1 {
 }
 h2 {
   font-size: 40px;
+  color: #f4e842;
   text-align: center;
-  background-color: #35f;
+  background-color: #71198e;
 }
 
 main {
