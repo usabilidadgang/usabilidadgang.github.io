@@ -346,7 +346,7 @@ var Credits = {
   },
 
   create: function () {
-    
+
     this.kekstar = this.game.add.sprite(30,320,'kekstar');
     this.kekstar.scale.setTo(0.05, 0.05);
     this.music = this.game.add.audio('creditMusic');
@@ -522,7 +522,7 @@ var BootScene = {
     this.game.load.image('preloader_bar', 'images/preloader_bar.png');
     this.game.load.spritesheet('button', 'images/buttons.png', 168, 70);
     this.game.load.image('logo', 'images/castle.png');
-    this.game.load.image('kekstar','images/kekstar.png');
+    this.game.load.image('kekstar','images/Kekstar.png');
     //http://freesound.org/people/NenadSimic/sounds/171697/
     this.game.load.audio('click', 'Sounds/Effects/click.wav');
 
