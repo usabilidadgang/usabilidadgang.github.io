@@ -1,6 +1,6 @@
 # Rex Vult
 Desde [Kekstar](https://github.com/kekstar) por
-[Manuel Hernández](https://github.com/manherna) y [Francisco Solano López-Bleda](https://github.com/franlbc97).
+[Manuel Hernández](https://github.com/manherna) , [Francisco Solano López-Bleda](https://github.com/franlbc97) y [Jorge Algaba Aranda](https://github.com/algaba97)
 ## Resumen
 | Genero         | Público | Modos de juego | Plataforma | calificación |
 |----------------|---------|----------------|------------| -------- |
