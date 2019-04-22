@@ -1,342 +1,6 @@
-(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
-(function (global){
-"use strict";
-
-// ref: https://github.com/tc39/proposal-global
-var getGlobal = function () {
-	// the only reliable means to get the global object is
-	// `Function('return this')()`
-	// However, this causes CSP violations in Chrome apps.
-	if (typeof self !== 'undefined') { return self; }
-	if (typeof window !== 'undefined') { return window; }
-	if (typeof global !== 'undefined') { return global; }
-	throw new Error('unable to locate global object');
-}
-
-var global = getGlobal();
-
-module.exports = exports = global.fetch;
-
-// Needed for TypeScript and Webpack.
-exports.default = global.fetch.bind(global);
-
-exports.Headers = global.Headers;
-exports.Request = global.Request;
-exports.Response = global.Response;
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
-exports.endianness = function () { return 'LE' };
-
-exports.hostname = function () {
-    if (typeof location !== 'undefined') {
-        return location.hostname
-    }
-    else return '';
-};
-
-exports.loadavg = function () { return [] };
-
-exports.uptime = function () { return 0 };
-
-exports.freemem = function () {
-    return Number.MAX_VALUE;
-};
-
-exports.totalmem = function () {
-    return Number.MAX_VALUE;
-};
-
-exports.cpus = function () { return [] };
-
-exports.type = function () { return 'Browser' };
-
-exports.release = function () {
-    if (typeof navigator !== 'undefined') {
-        return navigator.appVersion;
-    }
-    return '';
-};
-
-exports.networkInterfaces
-= exports.getNetworkInterfaces
-= function () { return {} };
-
-exports.arch = function () { return 'javascript' };
-
-exports.platform = function () { return 'browser' };
-
-exports.tmpdir = exports.tmpDir = function () {
-    return '/tmp';
-};
-
-exports.EOL = '\n';
-
-exports.homedir = function () {
-	return '/'
-};
-
-},{}],4:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],5:[function(require,module,exports){
-(function (process){
-/* 
-(The MIT License)
-Copyright (c) 2014 Halász Ádám <mail@adamhalasz.com>
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-//  Unique Hexatridecimal ID Generator
-// ================================================
-
-//  Dependencies
-// ================================================
-var pid = process && process.pid ? process.pid.toString(36) : '' ;
-var address = '';
-if(typeof __webpack_require__ !== 'function'){
-    var mac = '', networkInterfaces = require('os').networkInterfaces();
-    for(interface_key in networkInterfaces){
-        const networkInterface = networkInterfaces[interface_key];
-        const length = networkInterface.length;
-        for(var i = 0; i < length; i++){
-            if(networkInterface[i].mac && networkInterface[i].mac != '00:00:00:00:00:00'){
-                mac = networkInterface[i].mac; break;
-            }
-        }
-    }
-    address = mac ? parseInt(mac.replace(/\:|\D+/gi, '')).toString(36) : '' ;
-} 
-
-//  Exports
-// ================================================
-module.exports = module.exports.default = function(prefix){ return (prefix || '') + address + pid + now().toString(36); }
-module.exports.process = function(prefix){ return (prefix || '') + pid + now().toString(36); }
-module.exports.time    = function(prefix){ return (prefix || '') + now().toString(36); }
-
-//  Helpers
-// ================================================
-function now(){
-    var time = Date.now();
-    var last = now.last || time;
-    return now.last = time > last ? time : last + 1;
-}
-
-}).call(this,require('_process'))
-},{"_process":4,"os":3}],6:[function(require,module,exports){
-'use strict'
-const event = require('./Event');
-class CSVserializer
-{  
-    serialize(newEvent)
-    {
-        return  newEvent.userId.toString() + ", "+ newEvent.eventType.toString() + ", "+ newEvent.timeStamp + "," + this.serializeEventInfo(newEvent.eventInfo); 
-    }
-    serializeEventInfo(eventInfo)
-    {
-        if(eventInfo == null) return "";
-        var params = "";
-        Object.values(eventInfo).forEach(property => {
-            params+= property.toString() + " ";
-        });
-        return params;
-    }
-}
-module.exports = CSVserializer;
-},{"./Event":9}],7:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 var Direction = {'LEFT':-1, 'RIGHT':1, 'NONE':0};
-
-const Tracker = require('./Tracker.js');
-
-const EventType = require('./EventType')
-
 
 //DEFINICION DE OBJETOS DE LA ESCENA
 //Bandos del juego. Enemigos, heroe e indefinido para errores.
@@ -383,13 +47,14 @@ Character.prototype.constructor = Character;
 //Rey, que hereda de Character y se mueve y salta conforme al input del usuario
 function King (x, y, escene){
   //TODO CAMBIAR EL SPRITE AÑADIDO.
-  Character.apply(this, [x, y, party.hero, 'King', 'personaje', escene]);
-  //ANIMACIONES
-  this.animations.add('run',Phaser.Animation.generateFrameNames('R',0,3),15,true);
-  this.animations.add('jump', Phaser.Animation.generateFrameNames('J',0,4),10, false);
-  this.animations.add('idle', Phaser.Animation.generateFrameNames('R',0,0),1,true);
-  //SONIDO DEL SALTO
-  this.jumpsound = this.game.add.audio('jumpsound');
+Character.apply(this, [x, y, party.hero, 'King', 'personaje', escene]);
+//ANIMACIONES
+this.animations.add('run',Phaser.Animation.generateFrameNames('R',0,3),15,true);
+this.animations.add('jump', Phaser.Animation.generateFrameNames('J',0,4),10, false);
+this.animations.add('idle', Phaser.Animation.generateFrameNames('R',0,0),1,true);
+
+//SONIDO DEL SALTO
+this.jumpsound = this.game.add.audio('jumpsound');
 
 //FUNCIONES DEL REY
   King.prototype.update = function () {
@@ -397,7 +62,6 @@ function King (x, y, escene){
     this.animasion = '';
     if(escene.collisionDeath || this.lifes <= 0){
       escene.gameOver = true;
-      Tracker.AddEvent(EventType.PLAYER_DEAD,{x:this.x,y:this.y,reason:"Fall"});
     }
     var dir = this.getInput();
     if(dir!== 0)
@@ -409,6 +73,7 @@ function King (x, y, escene){
     if(this.isJumping()) this.animasion = 'jump';
     this.animations.play(this.animasion);
     Character.prototype.moveX.call(this, dir);
+
   };
 
   King.prototype.getInput = function () {
@@ -487,7 +152,6 @@ function Serpiente(x, y, escene){
       this.enemyhit.play(false);
       this.animations.play('death');
       this.primera = true;
-      Tracker.AddEvent(EventType.ENEMY_DEAD,{x:this.x,y:this.y,type:"Serpiente"});
     }
     this.deathanim.killOnComplete = true;
 
@@ -533,14 +197,8 @@ function Golem(x, y, escene){
   this.Serpientes = 0;
 Golem.prototype.update = function (){
 
-  if (this.lifes === 0){
-    Tracker.AddEvent(EventType.ENEMY_DEAD,{x:this._player.x,y:this._player.y,type:"Golem"});
-    this.game.state.start('levelSucceed');
-  }
-  if(this.KillPlayer()){
-    escene.gameOver = true;
-    Tracker.AddEvent(EventType.PLAYER_DEAD,{x:this._player.x,y:this._player.y,reason:"Golem"});
-  } 
+  if (this.lifes === 0)this.game.state.start('levelSucceed');
+  if(this.KillPlayer())  escene.gameOver = true;
   if(this.Stepped() && !this.tocado){
     this.lifes--;
     this.tocado = true;
@@ -596,72 +254,7 @@ module.exports = {
   Golem: Golem
 };
 
-},{"./EventType":10,"./Tracker.js":14}],8:[function(require,module,exports){
-'use strict'
-const fileSystem = require('fs');
-
-class DiskPersistance {
-
-    constructor (address)
-    {
-        this.address = address;
-    }
-    
-    send(dataString)
-    {
-        fileSystem.appendFile(this.address, dataString + "\n", { flag: 'a' }, function (err) {
-            if (err) throw err;
-            console.log("It's saved!");
-        });
-    }
-}
-
-module.exports = DiskPersistance;
-},{"fs":1}],9:[function(require,module,exports){
-'use strict'
-
-
-class Event
-{
-  constructor(userId, time_stamp, event_type, eventInfo)
-  {
-    this.userId = userId;
-    this.timeStamp = time_stamp;
-    this.eventType = event_type;
-    this.eventInfo = eventInfo;
-  }
-}
-
-module.exports = Event;
-
-},{}],10:[function(require,module,exports){
-'use strict'
-var EventType = {
-    SESSION_INIT :  0,
-    SESSION_CLOSE:  1,
-    PLAYER_POSITION:2,
-    ENEMY_DEAD :    3,
-    PLAYER_DEAD:    4,
-    LEVEL_INIT :    5,
-    LEVEL_FAIL:     6,
-    LEVEL_SUCCEDED: 7
-}
-
-module.exports = EventType;
-},{}],11:[function(require,module,exports){
-'use strict'
-const event = require('./Event');
-
-class JSONSerializer
-{
-    serialize(newEvent)
-    {
-        return  JSON.stringify(newEvent)    
-    }
-}
-module.exports = JSONSerializer;
-
-},{"./Event":9}],12:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 'use strict';
 var characters = require('./Characters.js');
 
@@ -697,125 +290,7 @@ module.exports = {
 CreateMap: CreateMap
 };
 
-},{"./Characters.js":7}],13:[function(require,module,exports){
-const fetch = require("node-fetch")
-class ServerPersistance
-{
-  constructor(address)
-  {
-      this.address = address;
-  }
-
-  send (dataString)
-  {
-      var obj = {data: dataString};
-      //console.log("Sending object: ", obj);
-      fetch(this.address, 
-        {
-        method:'POST',
-        headers:{
-          'Content-Type': 'application/json'
-        },
-        body : JSON.stringify(obj),
-        mode: 'cors'
-    
-
-      }).then(res => res.json())
-      .catch(error => console.log(error))
-    }
-  }
-
-module.exports = ServerPersistance;
-
-},{"node-fetch":2}],14:[function(require,module,exports){
-'use strict';
-const ServerPersistance = require('./ServerPersistance.js');
-const DiskPersistance = require('./DiskPersistance');
-const CSVSerializer = require('./CSVSerializer');
-const JSONSerializer = require('./JSONSerializer');
-const Event = require('./Event');
-const uniqid = require('uniqid');
-
-class Tracker {
-
-    constructor(typeOfPersistance, typeOfSerializing){
-      this.userid = uniqid();
-      this.event_queue = [];
-
-      switch (typeOfPersistance) {
-        case 0:
-          this.Persistence = new ServerPersistance('http://localhost:8080/tracker');
-          break;
-        case 1:
-          this.Persistence = new DiskPersistance("log.txt");
-          break;
-        default:
-          this.Persistence = new DiskPersistance("log.txt");
-          break;
-      }
-
-      switch (typeOfSerializing) {
-        case 0:
-          this.Serializer = new CSVSerializer();
-          break;
-        case 1:
-          this.Serializer = new JSONSerializer();
-          break;
-        default:
-          this.Serializer = new CSVSerializer();
-          break;
-      }
-      this.addEvent = function(event_type, event_info)
-      {
-        let date = new Date();
-        let timestamp = date.getTime();
-        let event = new Event(this.userid, timestamp, event_type, event_info)
-        this.event_queue.push(event);
-        if(this.event_queue.length > 5)
-          this.saveWithPersistance();
-  
-      }
-      this.saveWithPersistance = async function()
-      {
-        this.event_queue.forEach(event => {
-          let serializedData = this.Serializer.serialize(event);
-          this.Persistence.send(serializedData);
-        });
-        this.event_queue = [];       
-      }
-      this.flush = function()
-      {
-        this.saveWithPersistance();
-      }
-    } 
-  }
-
-  var Instance;
-
-  function InitializeTracker(typeOfPersistance,typeOfSerializing){
-    if(Instance == undefined){
-      Instance = new Tracker(typeOfPersistance, typeOfSerializing);
-      console.log("Tracker initialized");
-    }else{
-      console.log("Tracker already initialized");
-    }
-  }
-
-  function AddEvent(event_type,event_info){
-    Instance.addEvent(event_type,event_info);
-  }
-
-  function SaveWithPersistance(){
-    Instance.saveWithPersistance();
-  }
-
-  module.exports = {
-    AddEvent : AddEvent, 
-    InitTracker : InitializeTracker,
-    SaveWithPersistance: SaveWithPersistance,
-  };
-
-},{"./CSVSerializer":6,"./DiskPersistance":8,"./Event":9,"./JSONSerializer":11,"./ServerPersistance.js":13,"uniqid":5}],15:[function(require,module,exports){
+},{"./Characters.js":1}],3:[function(require,module,exports){
 var Credits = {
 
   preload: function () {
@@ -871,7 +346,7 @@ var Credits = {
   },
 
   create: function () {
-    
+
     this.kekstar = this.game.add.sprite(30,320,'kekstar');
     this.kekstar.scale.setTo(0.05, 0.05);
     this.music = this.game.add.audio('creditMusic');
@@ -902,7 +377,7 @@ var Credits = {
 };
 module.exports = Credits;
 
-},{}],16:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var GameOver = {
     create: function () {
       this.game.stage.backgroundColor = '#ffffff';
@@ -955,7 +430,7 @@ var GameOver = {
 
 module.exports = GameOver;
 
-},{}],17:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var GameOver = {
     create: function () {
       this.music = this.game.add.audio('levelSuccess');
@@ -1006,6 +481,11 @@ var GameOver = {
         text2.fill = 'white';
         text2.anchor.set(0.5);
         button2.addChild(text2);
+
+
+
+
+
     },
     //DONE 7 declarar el callback del boton.
     continue: function(){
@@ -1023,7 +503,7 @@ var GameOver = {
 
 module.exports = GameOver;
 
-},{}],18:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var playScene = require('./play_scene');
@@ -1031,8 +511,7 @@ var gameOver = require('./gameover_scene');
 var menuScene = require('./menu_scene');
 var credits = require('./credits');
 var levelSucceed = require('./levelSucceed_scene');
-var Tracker = require('./Tracker');
-const EventType = require("./EventType")
+
 //  The Google WebFont Loader will look for this object, so
 // it before loading the script.
 
@@ -1043,7 +522,7 @@ var BootScene = {
     this.game.load.image('preloader_bar', 'images/preloader_bar.png');
     this.game.load.spritesheet('button', 'images/buttons.png', 168, 70);
     this.game.load.image('logo', 'images/castle.png');
-    this.game.load.image('kekstar','images/kekstar.png');
+    this.game.load.image('kekstar','images/Kekstar.png');
     //http://freesound.org/people/NenadSimic/sounds/171697/
     this.game.load.audio('click', 'Sounds/Effects/click.wav');
 
@@ -1150,18 +629,10 @@ window.init = function(){
 
 }
 window.onload = function () {
-  Tracker.InitTracker(0,1);
-  Tracker.AddEvent(EventType.SESSION_INIT,undefined)
   WebFont.load(wfconfig);
-  navigator.webkitPersistentStorage.requestQuota(1024*1024, function() {
-    window.webkitRequestFileSystem(window.PERSISTENT , 1024*1024, SaveDatFileBro);
-  })
 };
-window.onclose = function (){
-  Tracker.AddEvent(EventType.SESSION_CLOSE,undefined)
-}
 
-},{"./EventType":10,"./Tracker":14,"./credits":15,"./gameover_scene":16,"./levelSucceed_scene":17,"./menu_scene":19,"./play_scene":20}],19:[function(require,module,exports){
+},{"./credits":3,"./gameover_scene":4,"./levelSucceed_scene":5,"./menu_scene":7,"./play_scene":8}],7:[function(require,module,exports){
 var MenuScene = {
   preload: function () {
     this.optionCount = 1;
@@ -1222,28 +693,16 @@ var MenuScene = {
 
 module.exports = MenuScene;
 
-},{}],20:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 //Enumerados: PlayerState son los estado por los que pasa el player. Directions son las direcciones a las que se puede
 //mover el player.
 var characters = require('./Characters.js');
 var mapCreator = require('./MapCreator');
-const Tracker = require('./Tracker.js');
-const EventType = require('./EventType')
-const date = new Date();
-const PlayerPositionEventTime = 1000;
 //EScena de juego.
 var PlayScene = {
     _player: {},
-  
-  playerPositionEvent: function()
-  {
-    if(this._player == null) return;
-      var sent = {x:this._player.x, y:this._player.y};
-      Tracker.AddEvent(EventType.PLAYER_POSITION, sent)
-
-  }, 
 
   create: function () {
     this.gameOver = false;
@@ -1262,8 +721,7 @@ var PlayScene = {
     this.hudScore.font = 'Astloch';
     this.hudScore.fontSize = 50;
     this.hudScore.fixedToCamera = true;
-    Tracker.AddEvent(EventType.LEVEL_INIT,{nivel: this.game.nivelActual});
-    this.playerPosEvent = this.game.time.events.loop(PlayerPositionEventTime, this.playerPositionEvent, this);
+
     //Generamos el mapa.
     new mapCreator.CreateMap(this.game.niveles[this.game.nivelActual], this);
     //Introducimos los objetos de juego
@@ -1274,7 +732,6 @@ var PlayScene = {
     this.spawnObjects('Spawn');
 
     this.pauseButton = this.game.input.keyboard.addKey(Phaser.Keyboard.P);
-    
     this.configure();
 
   },
@@ -1350,19 +807,17 @@ checkColisions: function(){
         this.pauseMenu();
       }
 
-      this.pauseButton.onDown.add(this.unpause, this);
+     this.pauseButton.onDown.add(this.unpause, this);
       this.input.onDown.add(this.unpause, this);
     }
     else {
       if(this.gameOver){
-        Tracker.AddEvent(EventType.LEVEL_FAIL,{level: this.game.nivelActual});
         this.lostSound.play(false);
         this.closeLevel();
         this.game.state.start('gameOver');
       }
       else
       {
-        Tracker.AddEvent(EventType.LEVEL_SUCCEDED,{level: this.game.nivelActual});
         this.closeLevel();
         this.game.overallScore+= this.sceneScore;
         this.game.state.start('levelSucceed');
@@ -1443,7 +898,6 @@ pauseMenu:function(){
 
 
     destroy: function(){
-      this.game.time.events.remove(this.playerPosEvent);
       this.music.destroy();
       this.playerDeath.destroy();
       this.objectArray.forEach(function(elem){
@@ -1486,4 +940,4 @@ pauseMenu:function(){
 
 module.exports = PlayScene;
 
-},{"./Characters.js":7,"./EventType":10,"./MapCreator":12,"./Tracker.js":14}]},{},[18]);
+},{"./Characters.js":1,"./MapCreator":2}]},{},[6]);
