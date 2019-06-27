@@ -311,25 +311,39 @@ function now(){
 }).call(this,require('_process'))
 },{"_process":4,"os":3}],6:[function(require,module,exports){
 'use strict'
-const event = require('./Event');
+/**
+ * Clase para la serialización de eventos a formato CSV
+ */
 class CSVserializer
-{  
+{
+    /**
+     * Serializa el evento en formato CSV 
+     * @param {Event} newEvent el evento a serializar
+     * @returns {String} El evento serializado
+     */
     serialize(newEvent)
     {
         return  newEvent.userId.toString() + ", "+ newEvent.eventType.toString() + ", "+ newEvent.timeStamp + "," + this.serializeEventInfo(newEvent.eventInfo); 
     }
+    //
+    /**
+     * Funcion auxiliar para serializar la informacion del evento
+     * @param {Event.eventInfo} eventInfo Informacion del evento
+     * @returns {String} la información del evento procesado para CSV
+     */
     serializeEventInfo(eventInfo)
     {
-        if(eventInfo == null) return "";
+        if(eventInfo == null) return"\"\"";
         var params = "";
+
         Object.values(eventInfo).forEach(property => {
-            params+= property.toString() + " ";
+            params+= property.toString() + ",";
         });
-        return params;
+        return "\"" + params.substr(0,params.length-1)+"\"";
     }
 }
 module.exports = CSVserializer;
-},{"./Event":9}],7:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 var Direction = {'LEFT':-1, 'RIGHT':1, 'NONE':0};
 
@@ -481,7 +495,10 @@ function Serpiente(x, y, escene){
   Serpiente.prototype.update = function (){
     if(!this.primera)
     this.moveX(this.playerNear());
-    if(this.KillPlayer())  escene.gameOver = true;
+    if(this.KillPlayer()){
+        Tracker.AddEvent(EventType.PLAYER_DEAD,{x:escene._player.x,y:escene._player.y,reason:"Snake"});
+        escene.gameOver = true;
+    }
     if(this.Stepped() && !this.primera){
       escene.sceneScore += 10;
       this.enemyhit.play(false);
@@ -534,12 +551,12 @@ function Golem(x, y, escene){
 Golem.prototype.update = function (){
 
   if (this.lifes === 0){
-    Tracker.AddEvent(EventType.ENEMY_DEAD,{x:this._player.x,y:this._player.y,type:"Golem"});
+    Tracker.AddEvent(EventType.ENEMY_DEAD,{x:escene._player.x,y:escene._player.y,type:"Golem"});
     this.game.state.start('levelSucceed');
   }
   if(this.KillPlayer()){
     escene.gameOver = true;
-    Tracker.AddEvent(EventType.PLAYER_DEAD,{x:this._player.x,y:this._player.y,reason:"Golem"});
+    Tracker.AddEvent(EventType.PLAYER_DEAD,{x:escene._player.x,y:escene._player.y,reason:"Golem"});
   } 
   if(this.Stepped() && !this.tocado){
     this.lifes--;
@@ -599,7 +616,7 @@ module.exports = {
 },{"./EventType":10,"./Tracker.js":14}],8:[function(require,module,exports){
 'use strict'
 const fileSystem = require('fs');
-
+//Debido a las diferentes APIs de los navegadores para guardar archivos adem�s de que no aporta una gran uilidad respecto a enviarlos al servidor
 class DiskPersistance {
 
     constructor (address)
@@ -625,10 +642,10 @@ class Event
 {
   constructor(userId, time_stamp, event_type, eventInfo)
   {
-    this.userId = userId;
-    this.timeStamp = time_stamp;
-    this.eventType = event_type;
-    this.eventInfo = eventInfo;
+    this.userId = userId; //Id de usuario
+    this.timeStamp = time_stamp;//Tiempo en EPOCH de creaci�n del evento
+    this.eventType = event_type;//Tipo de evento (1-7)
+    this.eventInfo = eventInfo;// Informaci�n adicional del evento como valor de la posici�n
   }
 }
 
@@ -636,24 +653,58 @@ module.exports = Event;
 
 },{}],10:[function(require,module,exports){
 'use strict'
+/**
+ * Los tipos de eventos definidos
+ */
 var EventType = {
-    SESSION_INIT :  0,
+    /**
+     * Inicio de sesion
+     */
+    SESSION_INIT: 0,
+    /**
+     * Fin de la sesión
+     */
     SESSION_CLOSE:  1,
+    /**
+     * Posición del jugador
+     */
     PLAYER_POSITION:2,
-    ENEMY_DEAD :    3,
-    PLAYER_DEAD:    4,
-    LEVEL_INIT :    5,
-    LEVEL_FAIL:     6,
-    LEVEL_SUCCEDED: 7
+    /**
+     * Enemigo muerto
+     */
+    ENEMY_DEAD :    3, 
+    /**
+     * Jugador muerto
+     */
+    PLAYER_DEAD:    4, 
+    /**
+     * Nivel comenzado
+     */
+    LEVEL_INIT :    5, 
+    /**
+     * Nivel fracasado
+     */
+    LEVEL_FAIL:     6, 
+    /**
+     * Nivel Completado
+     */
+    LEVEL_SUCCEDED: 7   
 }
 
 module.exports = EventType;
 },{}],11:[function(require,module,exports){
 'use strict'
-const event = require('./Event');
 
+/**
+ * Clase para la serialización de eventos a formato JSON
+ */
 class JSONSerializer
 {
+    /**
+     * Serializa el evento en formato JSON
+     * @param {Event} newEvent evento a serializar
+     * @returns {String} El evento serializado en formato JSON
+     */
     serialize(newEvent)
     {
         return  JSON.stringify(newEvent)    
@@ -661,7 +712,7 @@ class JSONSerializer
 }
 module.exports = JSONSerializer;
 
-},{"./Event":9}],12:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 var characters = require('./Characters.js');
 
@@ -699,17 +750,27 @@ CreateMap: CreateMap
 
 },{"./Characters.js":7}],13:[function(require,module,exports){
 const fetch = require("node-fetch")
+/**
+ * Clase para la persistencia en servidor
+ */
 class ServerPersistance
 {
+  /**
+   * Constructora de la clase
+   * @param {String} address Dirección a enviar los datos
+   */
   constructor(address)
   {
       this.address = address;
   }
 
+  /**
+   * Envia al servidor definido la información
+   * @param {String} dataString Datos
+   */
   send (dataString)
   {
       var obj = {data: dataString};
-      //console.log("Sending object: ", obj);
       fetch(this.address, 
         {
         method:'POST',
@@ -736,45 +797,55 @@ const JSONSerializer = require('./JSONSerializer');
 const Event = require('./Event');
 const uniqid = require('uniqid');
 
+/**
+ * Clase principal del tracker
+ */
 class Tracker {
 
+    /**
+     * Contructor del tracker
+     * @param {number} typeOfPersistance 
+     * @param {number} typeOfSerializing 
+     */
     constructor(typeOfPersistance, typeOfSerializing){
-      this.userid = uniqid();
-      this.event_queue = [];
+      this.userid = uniqid(); //Generacion de una id �nica para el usuario
+      this.event_queue = []; //Pila de eventos
 
       switch (typeOfPersistance) {
         case 0:
-          this.Persistence = new ServerPersistance('http://localhost:8080/tracker');
+          this.Persistence = new ServerPersistance('http://ec2-35-181-43-45.eu-west-3.compute.amazonaws.com:80/tracker');
           break;
-        case 1:
+        case 1://No est� implementado
           this.Persistence = new DiskPersistance("log.txt");
           break;
-        default:
+        default://No est� implementado
           this.Persistence = new DiskPersistance("log.txt");
           break;
       }
 
       switch (typeOfSerializing) {
-        case 0:
+        case 0: //Serializaci�n en CSV
           this.Serializer = new CSVSerializer();
           break;
-        case 1:
+        case 1: //Serializaci�n en JSON
           this.Serializer = new JSONSerializer();
           break;
         default:
           this.Serializer = new CSVSerializer();
           break;
       }
+      
       this.addEvent = function(event_type, event_info)
       {
         let date = new Date();
         let timestamp = date.getTime();
         let event = new Event(this.userid, timestamp, event_type, event_info)
         this.event_queue.push(event);
-        if(this.event_queue.length > 5)
+        if(this.event_queue.length > 5) //Si la pila es mayor de 5 guardamos
           this.saveWithPersistance();
   
       }
+       //funcion as�ncrona que sirve para guardar los eventos de la pila
       this.saveWithPersistance = async function()
       {
         this.event_queue.forEach(event => {
@@ -792,6 +863,11 @@ class Tracker {
 
   var Instance;
 
+  /**
+   * Iniciliza la instancia del Tracker
+   * @param {Number} typeOfPersistance 0 para la persistencia en Sevidor, 1 para persistencia en local, no funciona
+   * @param {Number} typeOfSerializing 0 para la serialización en CSV, 1 para serialización en JSON
+   */
   function InitializeTracker(typeOfPersistance,typeOfSerializing){
     if(Instance == undefined){
       Instance = new Tracker(typeOfPersistance, typeOfSerializing);
@@ -801,10 +877,18 @@ class Tracker {
     }
   }
 
+ /**
+  * Añade un evento a la cola
+  * @param {EventType} event_type El tipo de evento
+  * @param {Object} event_info la informacion adional del evento
+  */
   function AddEvent(event_type,event_info){
     Instance.addEvent(event_type,event_info);
   }
 
+  /**
+   * Guarda los eventos segun la configuación asignada
+   */
   function SaveWithPersistance(){
     Instance.saveWithPersistance();
   }
@@ -1153,12 +1237,15 @@ window.onload = function () {
   Tracker.InitTracker(0,1);
   Tracker.AddEvent(EventType.SESSION_INIT,undefined)
   WebFont.load(wfconfig);
-  navigator.webkitPersistentStorage.requestQuota(1024*1024, function() {
-    window.webkitRequestFileSystem(window.PERSISTENT , 1024*1024, SaveDatFileBro);
+  /*navigator.webkitPersistentStorage.requestQuota(1024*1024, function() {
+    window.webkitRequestFileSystem(window.PERSISTENT , 1024*1024, Tracker.SaveWithPersistance());
   })
+  Persistencia en disco
+  */
 };
-window.onclose = function (){
-  Tracker.AddEvent(EventType.SESSION_CLOSE,undefined)
+window.onbeforeunload  = function (){
+  Tracker.AddEvent(EventType.SESSION_CLOSE,undefined);
+  Tracker.SaveWithPersistance();
 }
 
 },{"./EventType":10,"./Tracker":14,"./credits":15,"./gameover_scene":16,"./levelSucceed_scene":17,"./menu_scene":19,"./play_scene":20}],19:[function(require,module,exports){
@@ -1232,7 +1319,7 @@ var mapCreator = require('./MapCreator');
 const Tracker = require('./Tracker.js');
 const EventType = require('./EventType')
 const date = new Date();
-const PlayerPositionEventTime = 1000;
+
 //EScena de juego.
 var PlayScene = {
     _player: {},
@@ -1263,7 +1350,7 @@ var PlayScene = {
     this.hudScore.fontSize = 50;
     this.hudScore.fixedToCamera = true;
     Tracker.AddEvent(EventType.LEVEL_INIT,{nivel: this.game.nivelActual});
-    this.playerPosEvent = this.game.time.events.loop(PlayerPositionEventTime, this.playerPositionEvent, this);
+    this.playerPosEvent = this.game.time.events.loop(1000, this.playerPositionEvent, this);
     //Generamos el mapa.
     new mapCreator.CreateMap(this.game.niveles[this.game.nivelActual], this);
     //Introducimos los objetos de juego
