@@ -813,7 +813,7 @@ class Tracker {
 
       switch (typeOfPersistance) {
         case 0:
-          this.Persistence = new ServerPersistance('http://ec2-35-181-43-45.eu-west-3.compute.amazonaws.com:80/tracker');
+          this.Persistence = new ServerPersistance('http://cors.io/?http://ec2-35-181-43-45.eu-west-3.compute.amazonaws.com:80/tracker');
           break;
         case 1://No est� implementado
           this.Persistence = new DiskPersistance("log.txt");
