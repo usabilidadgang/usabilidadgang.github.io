@@ -19598,7 +19598,7 @@ class Tracker {
       this.Persistence = new PersistanceDefaults[setupInfo.persistance.type](setupInfo.persistance.arg);
     }
     else {
-      this.Persistence = new ServerPersistance("https://usabilidadanalytics.tk:8080/tracker");
+      this.Persistence = new ServerPersistance("https://usabilidadanalytics.tk/tracker");
     }
 
     if (setupInfo.serializer != undefined) {
@@ -19916,16 +19916,16 @@ var BootScene = {
     PerformanceInfo.Initialize(this.game,Tracker);
     
     // load here assets required for the loading screen
-    this.game.load.image('preloader_bar', 'images/preloader_bar.png');
-    this.game.load.spritesheet('button', 'images/buttons.png', 168, 70);
-    this.game.load.image('logo', 'images/castle.png');
-    this.game.load.image('kekstar', 'images/kekstar.png');
+    this.game.load.image('preloader_bar', './images/preloader_bar.png');
+    this.game.load.spritesheet('button', './images/buttons.png', 168, 70);
+    this.game.load.image('logo', './images/castle.png');
+    this.game.load.image('kekstar', './images/kekstar.png');
     //http://freesound.org/people/NenadSimic/sounds/171697/
-    this.game.load.audio('click', 'Sounds/Effects/click.wav');
+    this.game.load.audio('click', './Sounds/Effects/click.wav');
 
     //http://opengameart.org/content/generic-8-bit-jrpg-soundtrack
-    this.game.load.audio('intromusic', 'Sounds/Music/intro.ogg');
-    this.game.load.audio('creditMusic', 'Sounds/Music/credits.ogg');
+    this.game.load.audio('intromusic', './Sounds/Music/intro.ogg');
+    this.game.load.audio('creditMusic', './Sounds/Music/credits.ogg');
 
   },
 
@@ -19949,38 +19949,38 @@ var PreloaderScene = {
     // el atlasJSONHash con 'images/rush_spritesheet.png' como imagen y 'images/rush_spritesheet.json'
     //como descriptor de la animación.
 
-    this.game.load.tilemap('Nivel1', 'mapas/Nivel1.json', null, Phaser.Tilemap.TILED_JSON);
-    this.game.load.tilemap('Nivel2', 'mapas/Nivel2.json', null, Phaser.Tilemap.TILED_JSON);
-    this.game.load.tilemap('Nivel3', 'mapas/Nivel3.json', null, Phaser.Tilemap.TILED_JSON);
+    this.game.load.tilemap('Nivel1', './mapas/Nivel1.json', null, Phaser.Tilemap.TILED_JSON);
+    this.game.load.tilemap('Nivel2', './mapas/Nivel2.json', null, Phaser.Tilemap.TILED_JSON);
+    this.game.load.tilemap('Nivel3', './mapas/Nivel3.json', null, Phaser.Tilemap.TILED_JSON);
 
-    this.game.load.image('tiles', 'images/sheet.png');
+    this.game.load.image('tiles', './images/sheet.png');
     //http://freesound.org/people/Questiion/sounds/166392/
-    this.game.load.audio('music1', 'Sounds/Music/Level1.wav');
-    this.game.load.audio('music2', 'Sounds/Music/Level2.ogg');
+    this.game.load.audio('music1', './Sounds/Music/Level1.wav');
+    this.game.load.audio('music2', './Sounds/Music/Level2.ogg');
 
     //http://freesound.org/people/primordiality/sounds/78824/
-    this.game.load.audio('levelSuccess', 'Sounds/Effects/LevelSuccess.wav');
+    this.game.load.audio('levelSuccess', './Sounds/Effects/LevelSuccess.wav');
 
 
 
-    this.game.load.audio('jumpsound', 'Sounds/Effects/Jump.wav');
+    this.game.load.audio('jumpsound', './Sounds/Effects/Jump.wav');
 
-    this.game.load.audio('enemyHit', "Sounds/Effects/EnemyHit.wav");
+    this.game.load.audio('enemyHit', "./Sounds/Effects/EnemyHit.wav");
     //http://freesound.org/people/josepharaoh99/sounds/361636/
-    this.game.load.audio('playerDeath', "Sounds/Effects/PlayerDeath.mp3");
+    this.game.load.audio('playerDeath', "./Sounds/Effects/PlayerDeath.mp3");
 
     //http://freesound.org/people/cabled_mess/sounds/350986/
-    this.game.load.audio('lost', 'Sounds/Effects/lost.wav');
+    this.game.load.audio('lost', './Sounds/Effects/lost.wav');
 
-    this.game.load.atlas('personaje', 'images/Character Sprites/King/King.png', 'atlas/King.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+    this.game.load.atlas('personaje', './images/Character Sprites/King/King.png', 'atlas/King.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
 
-    this.game.load.atlas('serpiente', 'images/Character Sprites/Snake/Snake.png', 'atlas/Snake.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+    this.game.load.atlas('serpiente', './images/Character Sprites/Snake/Snake.png', 'atlas/Snake.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
 
-    this.game.load.atlas('Golem', 'images/Character Sprites/Golem/Golem.png', 'atlas/Golem.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+    this.game.load.atlas('Golem', './images/Character Sprites/Golem/Golem.png', 'atlas/Golem.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
 
     
 
-    this.game.load.image('stairs', 'images/stairs.png');
+    this.game.load.image('stairs', './images/stairs.png');
     this.load.onLoadComplete.add(this.loadComplete, this);
   console.log(performance.memory)
 
@@ -20038,7 +20038,7 @@ window.onload = function () {
 
     persistance: {
       type: Tracker.PersistanceType.Server,
-      arg: "https://usabilidadanalytics.tk:8080/tracker",
+      arg: "https://usabilidadanalytics.tk/tracker",
     },
     serializer: {
       type: Tracker.SerializerType.JSON
